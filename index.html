@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CrochetCounter</title>
+<style>
+  /* Reset and base */
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--root-bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  :root {
+    /* Default Dark Theme */
+    --root-bg: #121418;
+    --panel-bg: #171A21;
+    --border: #2A2F3A;
+    --text: #E9ECF1;
+    --muted: #AAB2C0;
+    --accent: #7C5CFF;
+  }
+
+  /* Theme presets */
+  .theme-dark {
+    --root-bg: #121418;
+    --panel-bg: #171A21;
+    --border: #2A2F3A;
+    --text: #E9ECF1;
+    --muted: #AAB2C0;
+    --accent: #7C5CFF;
+  }
+  .theme-light {
+    --root-bg: #F4F6FA;
+    --panel-bg: #FFFFFF;
+    --border: #D6DCE8;
+    --text: #141824;
+    --muted: #556070;
+    --accent: #2A6BFF;
+  }
+  .theme-forest {
+    --root-bg: #0F1512;
+    --panel-bg: #151D18;
+    --border: #2A3A31;
+    --text: #EAF3EC;
+    --muted: #A7C0AE;
+    --accent: #3BD18A;
+  }
+  .theme-ocean {
+    --root-bg: #0B3D91;
+    --panel-bg: #145DA0;
+    --border: #1E81B0;
+    --text: #E0FBFC;
+    --muted: #A9BCD0;
+    --accent: #F4D35E;
+  }
+  .theme-sunset {
+    --root-bg: #FF5E5B;
+    --panel-bg: #D72631;
+    --border: #A41623;
+    --text: #F7FFF7;
+    --muted: #FFC6C7;
+    --accent: #FF9F1C;
+  }
+  .theme-lavender {
+    --root-bg: #6B5B95;
+    --panel-bg: #B8A9C9;
+    --border: #967AA1;
+    --text: #F2E9E4;
+    --muted: #D8C3A5;
+    --accent: #F7D6E0;
+  }
+  .theme-mint {
+    --root-bg: #2E8B57;
+    --panel-bg: #3CB371;
+    --border: #66CDAA;
+    --text: #E0F2F1;
+    --muted: #A7D7C5;
+    --accent: #81C784;
+  }
+
+  /* Layout */
+  header {
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+  header button {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  header button:hover, header button.active {
+    background-color: var(--accent);
+    color: var(--root-bg);
+  }
+
+  main {
+    flex-grow: 1;
+    padding: 1rem;
+    background-color: var(--root-bg);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  section {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  }
+
+  h1.title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    color: var(--text);
+  }
+  p.subtitle {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  label.key-label {
+    font-weight: bold;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  span.value-label {
+    font-size: 1.1rem;
+    color: var(--text);
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--root-bg);
+    color: var(--text);
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  button.primary-btn {
+    background-color: var(--accent);
+    border: none;
+    color: var(--root-bg);
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  button.primary-btn:disabled {
+    background-color: var(--border);
+    cursor: not-allowed;
+  }
+  button.primary-btn:hover:not(:disabled) {
+    background-color: darken(var(--accent), 10%);
+  }
+
+  button.secondary-btn {
+    background-color: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button.secondary-btn:hover {
+    background-color: var(--accent);
+    color: var(--root-bg);
+  }
+
+  .status-bar {
+    margin-top: 1rem;
+    font-style: italic;
+    color: var(--muted);
+    min-height: 1.2rem;
+  }
+
+  /* Stitch Calc layout */
+  .stitch-input-group {
+    margin-bottom: 1rem;
+  }
+
+  /* Counter layout */
+  .counter-display {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .counter-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .counter-controls button {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background-color: var(--accent);
+    color: var(--root-bg);
+    transition: background-color 0.3s ease;
+  }
+  .counter-controls button:disabled {
+    background-color: var(--border);
+    cursor: not-allowed;
+  }
+  .counter-controls button:hover:not(:disabled) {
+    background-color: darken(var(--accent), 10%);
+  }
+
+  .limit-section {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
+  .limit-section label {
+    font-weight: normal;
+    color: var(--text);
+  }
+  .limit-section input[type="number"] {
+    width: 100px;
+    margin-left: 0.5rem;
+  }
+  .limit-left-label {
+    margin-top: 0.5rem;
+    font-style: italic;
+    color: var(--muted);
+    min-height: 1.2rem;
+  }
+
+  /* Settings layout */
+  .settings-group {
+    margin-bottom: 1.5rem;
+  }
+  .settings-group label {
+    font-weight: bold;
+    color: var(--text);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .theme-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .theme-options button {
+    flex: 1 1 100px;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background-color: var(--panel-bg);
+    color: var(--text);
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  .theme-options button.active {
+    border-color: var(--accent);
+    background-color: var(--accent);
+    color: var(--root-bg);
+  }
+  .theme-options button:hover:not(.active) {
+    background-color: var(--accent);
+    color: var(--root-bg);
+  }
+  .custom-theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .color-picker-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .color-picker {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .color-picker input[type="color"] {
+    width: 60px;
+    height: 30px;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+  }
+
+  /* Utility */
+  .hidden {
+    display: none !important;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    section {
+      max-width: 100%;
+      margin: 0 0.5rem;
+    }
+    header {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  }
+</style>
+</head>
+<body class="theme-dark">
+
+<header>
+  <button id="nav-stitch" class="active" aria-controls="stitch-section" aria-selected="true">Stitch Calc</button>
+  <button id="nav-counter" aria-controls="counter-section" aria-selected="false">Counter</button>
+  <button id="nav-settings" aria-controls="settings-section" aria-selected="false">Settings</button>
+</header>
+
+<main>
+  <!-- Stitch Calculator -->
+  <section id="stitch-section" role="region" aria-labelledby="stitch-title">
+    <h1 id="stitch-title" class="title">Stitch Calculator</h1>
+    <p class="subtitle">Enter a round number and calculate related values.</p>
+
+    <div class="stitch-input-group">
+      <label for="round-input" class="key-label">Round Number (0 or higher):</label>
+      <input type="number" id="round-input" min="0" step="1" aria-describedby="status-msg" />
+    </div>
+
+    <button id="calculate-btn" class="primary-btn" type="button">Calculate</button>
+    <button id="clear-btn" class="secondary-btn" type="button">Clear</button>
+
+    <hr style="margin: 1.5rem 0; border-color: var(--border);" />
+
+    <label class="key-label">Result Round:</label>
+    <span id="result-round" class="value-label">—</span>
+
+    <label class="key-label">DCS (round × 12):</label>
+    <span id="dcs-value" class="value-label">—</span>
+
+    <label class="key-label">Spacing (round - 2):</label>
+    <span id="spacing-value" class="value-label">—</span>
+
+    <div class="status-bar" id="status-msg" aria-live="polite" aria-atomic="true">Enter a round and click Calculate.</div>
+  </section>
+
+  <!-- Counter -->
+  <section id="counter-section" role="region" aria-labelledby="counter-title" class="hidden">
+    <h1 id="counter-title" class="title">Counter</h1>
+    <p class="subtitle">Increment, decrement, and reset your count. Optionally set a limit.</p>
+
+    <div class="counter-display" aria-live="polite" aria-atomic="true" id="count-display">0</div>
+
+    <div class="counter-controls" role="group" aria-label="Counter controls">
+      <button id="decrement-btn" type="button" aria-label="Decrement count">−</button>
+      <button id="increment-btn" type="button" aria-label="Increment count">+</button>
+      <button id="reset-btn" type="button" aria-label="Reset count">⟳</button>
+    </div>
+
+    <div class="limit-section">
+      <label>
+        <input type="checkbox" id="limit-enable" />
+        Enable Limit
+      </label>
+      <input type="number" id="limit-value" min="0" step="1" value="100" disabled aria-label="Limit value" />
+      <button id="set-limit-dcs-btn" class="secondary-btn" disabled type="button">Set Limit to DCS</button>
+      <div class="limit-left-label" id="limit-left-label" aria-live="polite" aria-atomic="true"></div>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section id="settings-section" role="region" aria-labelledby="settings-title" class="hidden">
+    <h1 id="settings-title" class="title">Settings</h1>
+    <p class="subtitle">Choose a theme preset or customize your own colors.</p>
+
+    <div class="settings-group">
+      <label for="theme-presets">Theme Presets:</label>
+      <div class="theme-options" id="theme-presets" role="list" aria-label="Theme presets">
+        <button type="button" data-theme="dark" class="active" role="listitem">Dark</button>
+        <button type="button" data-theme="light" role="listitem">Light</button>
+        <button type="button" data-theme="forest" role="listitem">Forest</button>
+        <button type="button" data-theme="ocean" role="listitem">Ocean</button>
+        <button type="button" data-theme="sunset" role="listitem">Sunset</button>
+        <button type="button" data-theme="lavender" role="listitem">Lavender</button>
+        <button type="button" data-theme="mint" role="listitem">Mint</button>
+      </div>
+    </div>
+
+    <div class="settings-group custom-theme-toggle">
+      <label for="custom-theme-checkbox">Enable Custom Theme</label>
+      <input type="checkbox" id="custom-theme-checkbox" />
+    </div>
+
+    <div class="settings-group color-picker-group" id="custom-color-pickers" style="display:none;">
+      <div class="color-picker">
+        <label for="color-root-bg">Root Background</label>
+        <input type="color" id="color-root-bg" value="#121418" />
+      </div>
+      <div class="color-picker">
+        <label for="color-panel-bg">Panel Background</label>
+        <input type="color" id="color-panel-bg" value="#171A21" />
+      </div>
+      <div class="color-picker">
+        <label for="color-border">Border Color</label>
+        <input type="color" id="color-border" value="#2A2F3A" />
+      </div>
+      <div class="color-picker">
+        <label for="color-text">Text Color</label>
+        <input type="color" id="color-text" value="#E9ECF1" />
+      </div>
+      <div class="color-picker">
+        <label for="color-muted">Muted Text</label>
+        <input type="color" id="color-muted" value="#AAB2C0" />
+      </div>
+      <div class="color-picker">
+        <label for="color-accent">Accent Color</label>
+        <input type="color" id="color-accent" value="#7C5CFF" />
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Elements
+  const navStitch = document.getElementById('nav-stitch');
+  const navCounter = document.getElementById('nav-counter');
+  const navSettings = document.getElementById('nav-settings');
+
+  const stitchSection = document.getElementById('stitch-section');
+  const counterSection = document.getElementById('counter-section');
+  const settingsSection = document.getElementById('settings-section');
+
+  // Stitch Calc elements
+  const roundInput = document.getElementById('round-input');
+  const calculateBtn = document.getElementById('calculate-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const resultRound = document.getElementById('result-round');
+  const dcsValue = document.getElementById('dcs-value');
+  const spacingValue = document.getElementById('spacing-value');
+  const statusMsg = document.getElementById('status-msg');
+
+  // Counter elements
+  const countDisplay = document.getElementById('count-display');
+  const incrementBtn = document.getElementById('increment-btn');
+  const decrementBtn = document.getElementById('decrement-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const limitEnableCheckbox = document.getElementById('limit-enable');
+  const limitValueInput = document.getElementById('limit-value');
+  const limitLeftLabel = document.getElementById('limit-left-label');
+  const setLimitDcsBtn = document.getElementById('set-limit-dcs-btn');
+
+  // Settings elements
+  const themePresetButtons = document.querySelectorAll('#theme-presets button');
+  const customThemeCheckbox = document.getElementById('custom-theme-checkbox');
+  const customColorPickers = document.getElementById('custom-color-pickers');
+  const colorRootBg = document.getElementById('color-root-bg');
+  const colorPanelBg = document.getElementById('color-panel-bg');
+  const colorBorder = document.getElementById('color-border');
+  const colorText = document.getElementById('color-text');
+  const colorMuted = document.getElementById('color-muted');
+  const colorAccent = document.getElementById('color-accent');
+
+  // State
+  let currentTheme = 'dark';
+  let customThemeEnabled = false;
+  let count = 0;
+  let limitEnabled = false;
+  let limitValue = 100;
+
+  // Navigation handlers
+  function setActiveNav(button) {
+    [navStitch, navCounter, navSettings].forEach(btn => {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-selected', 'false');
+    });
+    button.classList.add('active');
+    button.setAttribute('aria-selected', 'true');
+  }
+  function showSection(section) {
+    [stitchSection, counterSection, settingsSection].forEach(sec => {
+      sec.classList.add('hidden');
+    });
+    section.classList.remove('hidden');
+  }
+
+  navStitch.addEventListener('click', () => {
+    setActiveNav(navStitch);
+    showSection(stitchSection);
+    roundInput.focus();
+  });
+  navCounter.addEventListener('click', () => {
+    setActiveNav(navCounter);
+    showSection(counterSection);
+    updateLimitUI();
+    updateLeftBeforeLimit();
+  });
+  navSettings.addEventListener('click', () => {
+    setActiveNav(navSettings);
+    showSection(settingsSection);
+    syncSettingsUI();
+  });
+
+  // Stitch Calc logic
+  function setStatus(msg) {
+    statusMsg.textContent = msg;
+  }
+
+  function parseNonNegInt(text) {
+    const n = Number(text);
+    if (!Number.isInteger(n) || n < 0) throw new Error('Invalid number');
+    return n;
+  }
+
+  function calculate() {
+    const raw = roundInput.value.trim();
+    try {
+      const r = parseNonNegInt(raw);
+      const dcs = r * 12;
+      const spacing = r - 2;
+      resultRound.textContent = r;
+      dcsValue.textContent = dcs;
+      spacingValue.textContent = spacing;
+      setStatus('Calculated.');
+    } catch {
+      setStatus('Enter a valid whole number (0 or higher).');
+      resultRound.textContent = '—';
+      dcsValue.textContent = '—';
+      spacingValue.textContent = '—';
+    }
+  }
+
+  function clearAll() {
+    roundInput.value = '';
+    resultRound.textContent = '—';
+    dcsValue.textContent = '—';
+    spacingValue.textContent = '—';
+    setStatus('Cleared.');
+    roundInput.focus();
+  }
+
+  calculateBtn.addEventListener('click', calculate);
+  clearBtn.addEventListener('click', clearAll);
+  roundInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') calculate();
+  });
+
+  // Counter logic
+  function updateCountDisplay() {
+    countDisplay.textContent = count;
+  }
+
+  function getLimitValue() {
+    const val = limitValueInput.value.trim();
+    const n = Number(val);
+    if (!Number.isInteger(n) || n < 0) throw new Error('Invalid limit');
+    return n;
+  }
+
+  function updateLeftBeforeLimit() {
+    if (!limitEnabled) {
+      limitLeftLabel.textContent = '';
+      return;
+    }
+    try {
+      const lim = getLimitValue();
+      let left = lim - count;
+      if (left < 0) left = 0;
+      limitLeftLabel.textContent = `${left} left before limit`;
+    } catch {
+      limitLeftLabel.textContent = 'Limit is invalid';
+    }
+  }
+
+  function updateLimitUI() {
+    limitValueInput.disabled = !limitEnabled;
+    setLimitDcsBtn.disabled = !limitEnabled;
+    updateLeftBeforeLimit();
+  }
+
+  incrementBtn.addEventListener('click', () => {
+    if (limitEnabled) {
+      try {
+        const lim = getLimitValue();
+        if (count >= lim) {
+          updateLeftBeforeLimit();
+          return;
+        }
+      } catch {
+        alert('Please enter a valid whole number for the limit.');
+        return;
+      }
+    }
+    count++;
+    updateCountDisplay();
+    updateLeftBeforeLimit();
+  });
+
+  decrementBtn.addEventListener('click', () => {
+    if (count > 0) count--;
+    updateCountDisplay();
+    updateLeftBeforeLimit();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    count = 0;
+    updateCountDisplay();
+    updateLeftBeforeLimit();
+  });
+
+  limitEnableCheckbox.addEventListener('change', () => {
+    limitEnabled = limitEnableCheckbox.checked;
+    updateLimitUI();
+  });
+
+  limitValueInput.addEventListener('input', () => {
+    updateLeftBeforeLimit();
+  });
+
+  setLimitDcsBtn.addEventListener('click', () => {
+    // Set limit to current DCS value from stitch calc
+    const dcsText = dcsValue.textContent;
+    if (dcsText === '—') {
+      alert('Calculate DCS value first in Stitch Calculator.');
+      return;
+    }
+    limitValueInput.value = dcsText;
+    limitEnabled = true;
+    limitEnableCheckbox.checked = true;
+    updateLimitUI();
+    updateLeftBeforeLimit();
+  });
+
+  // Settings logic
+  function applyTheme(name) {
+    document.body.className = ''; // remove all theme classes
+    if (!customThemeEnabled) {
+      document.body.classList.add(`theme-${name}`);
+      currentTheme = name;
+    } else {
+      // Apply custom colors via CSS variables
+      document.body.style.setProperty('--root-bg', colorRootBg.value);
+      document.body.style.setProperty('--panel-bg', colorPanelBg.value);
+      document.body.style.setProperty('--border', colorBorder.value);
+      document.body.style.setProperty('--text', colorText.value);
+      document.body.style.setProperty('--muted', colorMuted.value);
+      document.body.style.setProperty('--accent', colorAccent.value);
+    }
+  }
+
+  function syncSettingsUI() {
+    // Sync theme buttons
+    themePresetButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.theme === currentTheme);
+    });
+    // Sync custom theme checkbox
+    customThemeCheckbox.checked = customThemeEnabled;
+    customColorPickers.style.display = customThemeEnabled ? 'flex' : 'none';
+    // Sync color pickers with current colors or defaults
+    if (customThemeEnabled) {
+      // Already set by user, keep values
+    } else {
+      // Reset color pickers to current theme preset colors
+      const themeColors = {
+        dark: {
+          root_bg: '#121418',
+          panel_bg: '#171A21',
+          border: '#2A2F3A',
+          text: '#E9ECF1',
+          muted: '#AAB2C0',
+          accent: '#7C5CFF',
+        },
+        light: {
+          root_bg: '#F4F6FA',
+          panel_bg: '#FFFFFF',
+          border: '#D6DCE8',
+          text: '#141824',
+          muted: '#556070',
+          accent: '#2A6BFF',
+        },
+        forest: {
+          root_bg: '#0F1512',
+          panel_bg: '#151D18',
+          border: '#2A3A31',
+          text: '#EAF3EC',
+          muted: '#A7C0AE',
+          accent: '#3BD18A',
+        },
+        ocean: {
+          root_bg: '#0B3D91',
+          panel_bg: '#145DA0',
+          border: '#1E81B0',
+          text: '#E0FBFC',
+          muted: '#A9BCD0',
+          accent: '#F4D35E',
+        },
+        sunset: {
+          root_bg: '#FF5E5B',
+          panel_bg: '#D72631',
+          border: '#A41623',
+          text: '#F7FFF7',
+          muted: '#FFC6C7',
+          accent: '#FF9F1C',
+        },
+        lavender: {
+          root_bg: '#6B5B95',
+          panel_bg: '#B8A9C9',
+          border: '#967AA1',
+          text: '#F2E9E4',
+          muted: '#D8C3A5',
+          accent: '#F7D6E0',
+        },
+        mint: {
+          root_bg: '#2E8B57',
+          panel_bg: '#3CB371',
+          border: '#66CDAA',
+          text: '#E0F2F1',
+          muted: '#A7D7C5',
+          accent: '#81C784',
+        }
+      };
+      const colors = themeColors[currentTheme] || themeColors.dark;
+      colorRootBg.value = colors.root_bg;
+      colorPanelBg.value = colors.panel_bg;
+      colorBorder.value = colors.border;
+      colorText.value = colors.text;
+      colorMuted.value = colors.muted;
+      colorAccent.value = colors.accent;
+    }
+  }
+
+  themePresetButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (customThemeEnabled) return; // ignore if custom theme enabled
+      currentTheme = btn.dataset.theme;
+      applyTheme(currentTheme);
+      syncSettingsUI();
+    });
+  });
+
+  customThemeCheckbox.addEventListener('change', () => {
+    customThemeEnabled = customThemeCheckbox.checked;
+    if (!customThemeEnabled) {
+      // Reset to current preset theme
+      applyTheme(currentTheme);
+    } else {
+      // Apply custom colors
+      applyTheme(null);
+    }
+    syncSettingsUI();
+  });
+
+  // Update theme on color picker change if custom theme enabled
+  [colorRootBg, colorPanelBg, colorBorder, colorText, colorMuted, colorAccent].forEach(input => {
+    input.addEventListener('input', () => {
+      if (customThemeEnabled) {
+        applyTheme(null);
+      }
+    });
+  });
+
+  // Initialize
+  applyTheme(currentTheme);
+  updateCountDisplay();
+  updateLimitUI();
+  updateLeftBeforeLimit();
+  setStatus('Enter a round and click Calculate.');
+
+</script>
+</body>
+</html>
